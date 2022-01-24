@@ -25,7 +25,7 @@ public class Bank {
                 statement = connection.createStatement();
             } catch (IOException | SQLException | NumberFormatException | NullPointerException e) {
                 error++;
-                System.out.println("Неправильный ввод");
+                System.out.println("Ошибка подключения на сервере");
             }
 
             while (error < 5) {
@@ -120,7 +120,7 @@ public class Bank {
                 return true;
             }
         } catch (SQLException e) {
-            System.out.println("Ошибка запроса");
+            System.out.println("Ошибка запроса в БД");
         }
 
         return false;
