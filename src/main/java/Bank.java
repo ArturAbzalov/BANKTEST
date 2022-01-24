@@ -25,7 +25,7 @@ public class Bank {
                 statement = connection.createStatement();
             } catch (IOException | SQLException | NumberFormatException | NullPointerException e) {
                 error++;
-                System.out.println("Неправильный ввод");
+                System.out.println("РќРµРїСЂР°РІРёР»СЊРЅС‹Р№ РІРІРѕРґ");
             }
 
             while (error < 5) {
@@ -102,7 +102,7 @@ public class Bank {
                     }
                 } catch (NumberFormatException | NullPointerException | IOException | SQLException e) {
                     error++;
-                    System.out.println("Ошибка на сервере");
+                    System.out.println("РћС€РёР±РєР° РЅР° СЃРµСЂРІРµСЂРµ");
                 }
 
             }
@@ -111,7 +111,8 @@ public class Bank {
 
 
     public static boolean checkClient(String clientNumber, String pinCode) {
-        String sql = "select firstname,id from Client where cardnumber=" + clientNumber + " and password =" + "'" + Encoder.getSHA(pinCode) + "'";
+        String sql = "select firstname,id from Client where cardnumber=" + clientNumber + " and password =" + "'"
+                + Encoder.getSHA(pinCode) + "'";
         try {
             resultSet = statement.executeQuery(sql);
             if (resultSet.next()) {
@@ -119,7 +120,7 @@ public class Bank {
                 return true;
             }
         } catch (SQLException e) {
-            System.out.println("Ошибка запроса");
+            System.out.println("РћС€РёР±РєР° Р·Р°РїСЂРѕСЃР°");
         }
 
         return false;
