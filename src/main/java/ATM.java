@@ -1,5 +1,3 @@
-
-
 import java.io.*;
 import java.net.Socket;
 import java.sql.*;
@@ -16,24 +14,23 @@ public class ATM {
 
 
     public static void main(String[] args) {
-        while (true) {
+        int error = 0;
+        while (error<5) {
             try {
                 reader = new BufferedReader(new InputStreamReader(System.in));
-                clientSocket = new Socket("localhost", 3347);
+                clientSocket = new Socket("localhost", 3350);
                 in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
-                connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/atm",
-                        "ATM", "123");
+                connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/ATM", "ATM", "123");
                 statement = connection.createStatement();
+            } catch (IOException | SQLException | NullPointerException e) {
+                error++;
+                System.out.println("Неудалось подключиться к базе данных или серверу");
+            }
+            while (true) {
                 if (checkNumberCard()) {
                     while (true) {
-                        System.out.println("--------Главное меню--------\n" +
-                                "1.Вывести баланс на экран\n" +
-                                "2.Снять деньги\n" +
-                                "3.Перевести на другой счет\n" +
-                                "4.Внести деньги\n" +
-                                "6.Завершение работы\n" +
-                                "Введите код нужной операции: ");
+                        System.out.println("--------Главное меню--------\n" + "1.Вывести баланс на экран\n" + "2.Снять деньги\n" + "3.Перевести на другой счет\n" + "4.Внести деньги\n" + "6.Завершение работы\n" + "Введите код нужной операции: ");
                         try {
                             String input = reader.readLine();
                             if (checkPatternOneNumber(input)) {
@@ -46,14 +43,12 @@ public class ATM {
                                 if (Integer.parseInt(input) == 2) {
                                     while (true) {
                                         try {
-                                            System.out.println("Введите сумму, кратную 100: " +
-                                                    "\nДля возврата в предыдущее меню нажмите 0");
+                                            System.out.println("Введите сумму, кратную 100: " + "\nДля возврата в предыдущее меню нажмите 0");
                                             int temp = Integer.parseInt(reader.readLine());
                                             if (temp == 0) break;
                                             if (temp % 100 == 0 && temp > 0) {
                                                 if (!checkMoneyATM(temp)) {
-                                                    System.out.println("В данный момент " +
-                                                            "выдача невозможна, отсутствуют купюры");
+                                                    System.out.println("В данный момент " + "выдача невозможна, отсутствуют купюры");
                                                     continue;
                                                 }
                                                 out.write(2 + "\n");
@@ -62,8 +57,7 @@ public class ATM {
                                                 out.flush();
                                                 int tempAnswer = Integer.parseInt(in.readLine());
                                                 if (tempAnswer == 1) {
-                                                    System.out.println("Операция прошла успешно, ваш баланс: " +
-                                                            "" + Integer.parseInt(in.readLine()));
+                                                    System.out.println("Операция прошла успешно, ваш баланс: " + "" + Integer.parseInt(in.readLine()));
                                                     break;
                                                 }
                                                 if (tempAnswer == 0) {
@@ -81,13 +75,11 @@ public class ATM {
                                 if (Integer.parseInt(input) == 3) {
                                     while (true) {
                                         try {
-                                            System.out.println("Введите номер счета на который хотите " +
-                                                    "перевести деньги и сумму : \nДля выхода нажмите 0");
+                                            System.out.println("Введите номер счета на который хотите " + "перевести деньги и сумму : \nДля выхода нажмите 0");
                                             String number = reader.readLine();
                                             if (Long.parseLong(number) == 0) break;
                                             String sum = reader.readLine();
-                                            if (checkPatternNumber(number) && Long.parseLong(number) > 0
-                                                    && Long.parseLong(sum) > 0) {
+                                            if (checkPatternNumber(number) && Long.parseLong(number) > 0 && Long.parseLong(sum) > 0) {
                                                 out.write(3 + "\n");
                                                 out.flush();
                                                 out.write(number + "\n");
@@ -96,8 +88,7 @@ public class ATM {
                                                 out.flush();
                                                 int serverAnswer = Integer.parseInt(in.readLine());
                                                 if (serverAnswer == 1) {
-                                                    System.out.println("Операция завершена, ваш баланс "
-                                                            + Integer.parseInt(in.readLine()));
+                                                    System.out.println("Операция завершена, ваш баланс " + Integer.parseInt(in.readLine()));
                                                     break;
                                                 }
                                                 if (serverAnswer == 2) {
@@ -119,8 +110,7 @@ public class ATM {
                                 if (Integer.parseInt(input) == 4) {
                                     while (true) {
                                         try {
-                                            System.out.println("Введите сумму, кратную 100: \n" +
-                                                    "Для выхода нажмите 0");
+                                            System.out.println("Введите сумму, кратную 100: \n" + "Для выхода нажмите 0");
                                             int total = Integer.parseInt(reader.readLine());
                                             if (total == 0 || total < 0) break;
                                             if (total % 100 == 0) {
@@ -128,8 +118,7 @@ public class ATM {
                                                 out.flush();
                                                 out.write(total + "\n");
                                                 out.flush();
-                                                System.out.println("Операция завершена успешно," +
-                                                        "Ваш баланс составляет: " + Integer.parseInt(in.readLine()));
+                                                System.out.println("Операция завершена успешно," + "Ваш баланс составляет: " + Integer.parseInt(in.readLine()));
                                                 break;
                                             } else {
                                                 System.out.println("Некорректная сумма, введите сумму кратную 100");
@@ -149,27 +138,15 @@ public class ATM {
                                 System.out.println("Повторите попытку");
                             }
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            System.out.println("Неверный формат ввода");
                         }
                     }
                 }
-            } catch (IOException | SQLException e) {
-                System.out.println("Неудалось подключиться к базе данных ");
-            } finally {
-                try {
-                    statement.close();
-                    clientSocket.close();
-                    in.close();
-                    out.close();
-                    connection.close();
-                    reader.close();
-                } catch (SQLException | IOException | NullPointerException e) {
-                    System.out.println("Ошибка подключения");
-                }
             }
-
         }
+
     }
+
 
     public static boolean checkNumberCard() {
         System.out.println("Добро пожаловать!\nВведите номер карты: ");
@@ -200,9 +177,8 @@ public class ATM {
                 temp++;
                 System.out.println("Неправильно набран номер карты или пароль, повторите попытку: ");
             }
-        } catch (
-                IOException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Ошибка ввода");
         }
         return false;
     }

@@ -1,5 +1,3 @@
-
-
 import java.net.*;
 import java.io.*;
 import java.sql.*;
@@ -9,24 +7,29 @@ public class Bank {
     private static int idClient;
     private static BufferedReader in;
     private static BufferedWriter out;
-    private static Socket client;
-    private static Connection connection;
     private static ResultSet resultSet;
-    private static ServerSocket server;
 
 
-    public static void main (String[] args){
-        while (true) {
+    public static void main(String[] args) {
+        int error = 0;
+        while (error < 5) {
             try {
-                server = new ServerSocket(3347);
-                client = server.accept();
+                ServerSocket server = new ServerSocket(3350);
+                Socket client = server.accept();
                 in = new BufferedReader(new InputStreamReader(client.getInputStream()));
                 out = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
-                connection = DriverManager.getConnection(
+                Connection connection = DriverManager.getConnection(
                         "jdbc:postgresql://localhost:5432/postgres",
-                        "postgres", "22121994");
+                        "postgres",
+                        "22121994");
                 statement = connection.createStatement();
-                while (true) {
+            } catch (IOException | SQLException | NumberFormatException | NullPointerException e) {
+                error++;
+                System.out.println("Неправильный ввод");
+            }
+
+            while (error < 5) {
+                try {
                     int numberFunction = Integer.parseInt(in.readLine());
                     if (numberFunction == 1) {
                         int temp = checkBalance();
@@ -35,7 +38,7 @@ public class Bank {
                     }
                     if (numberFunction == 2) {
                         int total = Integer.parseInt(in.readLine());
-                        if (checkBalance() - total > 0) {
+                        if (checkBalance() - total >= 0) {
                             int temp = checkBalance() - total;
                             String sql = "update client set accountbalance=" + temp + " where id=" + idClient;
                             statement.executeUpdate(sql);
@@ -97,32 +100,28 @@ public class Bank {
                             out.flush();
                         }
                     }
-                }
-            } catch (IOException |SQLException e) {
-                System.out.println("Неправильный ввод");
-            }finally {
-                try {
-                    client.close();
-                    in.close();
-                    out.close();
-                    connection.close();
-                    statement.close();
-                } catch (IOException | NullPointerException | SQLException e) {
-                    System.out.println("Неудалось установить соединение");
+                } catch (NumberFormatException | NullPointerException | IOException | SQLException e) {
+                    error++;
+                    System.out.println("Ошибка на сервере");
                 }
 
             }
         }
-
     }
 
-    public static boolean checkClient(String clientNumber, String pinCode) throws SQLException {
+
+    public static boolean checkClient(String clientNumber, String pinCode) {
         String sql = "select firstname,id from Client where cardnumber=" + clientNumber + " and password =" + "'" + Encoder.getSHA(pinCode) + "'";
-        resultSet = statement.executeQuery(sql);
-        if (resultSet.next()) {
-            idClient = resultSet.getInt("id");
-            return true;
+        try {
+            resultSet = statement.executeQuery(sql);
+            if (resultSet.next()) {
+                idClient = resultSet.getInt("id");
+                return true;
+            }
+        } catch (SQLException e) {
+            System.out.println("Ошибка запроса");
         }
+
         return false;
     }
 
